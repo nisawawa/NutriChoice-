@@ -58,21 +58,20 @@ function App() {
 
   const getRecommendedCalories = () => {
     const age = parseInt(formData.age) || 25;
-    const weight = parseInt(formData.weight) || 60;
     
-    // BMR Calculation (Mifflin-St Jeor) assuming average height (165cm men, 155cm women)
-    let bmr;
     if (formData.gender === 'Laki-laki') {
-      bmr = (10 * weight) + (6.25 * 165) - (5 * age) + 5;
+      if (age <= 29) return 2650;
+      if (age >= 30 && age <= 49) return 2550;
+      if (age >= 50 && age <= 64) return 2150;
+      if (age >= 65 && age <= 80) return 1800;
+      return 1600; // > 80
     } else {
-      bmr = (10 * weight) + (6.25 * 155) - (5 * age) - 161;
+      if (age <= 29) return 2250;
+      if (age >= 30 && age <= 49) return 2150;
+      if (age >= 50 && age <= 64) return 1800;
+      if (age >= 65 && age <= 80) return 1550;
+      return 1400; // > 80
     }
-
-    let activityMultiplier = 1.375; // Sedang
-    if (formData.activityLevel === 'Ringan') activityMultiplier = 1.2;
-    if (formData.activityLevel === 'Berat') activityMultiplier = 1.55;
-
-    return Math.round(bmr * activityMultiplier);
   };
 
   return (
