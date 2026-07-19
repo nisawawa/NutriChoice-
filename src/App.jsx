@@ -205,7 +205,10 @@ function App() {
           <div className="animate-fade-in">
              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
               <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Peringkat Menu Makanan Terbaik</h2>
-              <p style={{ color: 'var(--color-text-secondary)' }}>Sistem telah menghitung nilai alternatif. Silakan pilih menu yang direkomendasikan.</p>
+              <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.5rem' }}>Sistem telah menghitung nilai alternatif. Silakan pilih menu yang direkomendasikan.</p>
+              <span style={{ fontSize: '0.8rem', color: 'var(--color-primary)', backgroundColor: '#f0fdf4', padding: '0.25rem 0.75rem', borderRadius: '1rem', border: '1px solid #bbf7d0', display: 'inline-block' }}>
+                💡 <b>Asumsi Pengolahan:</b> Nilai gizi dan kalori diasumsikan menggunakan metode masak sehat (rebus, kukus, panggang) tanpa <i>deep-frying</i>.
+              </span>
             </div>
 
             {selectedMenu && (
