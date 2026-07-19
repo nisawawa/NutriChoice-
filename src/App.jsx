@@ -89,10 +89,16 @@ function App() {
             </svg>
             NutriChoice
           </a>
-          <div>
-            <button onClick={() => setView(view === 'user' ? 'admin' : 'user')} style={{ background: 'none', border: 'none', cursor: 'pointer', marginRight: '1rem', color: 'var(--color-text-secondary)', fontSize: '1.2rem' }} title="Mode Admin">
-               🔒
-            </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {view === 'user' ? (
+              <button onClick={() => setView('admin')} className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }}>
+                Login Admin
+              </button>
+            ) : (
+              <button onClick={() => { setView('user'); setIsAdminAuth(false); }} className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }}>
+                Kembali ke App
+              </button>
+            )}
             <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-text-secondary)'}}>Sistem Pendukung Keputusan</span>
           </div>
         </div>
