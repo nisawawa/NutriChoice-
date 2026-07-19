@@ -133,7 +133,7 @@ function App() {
                 <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>Kelola database menu makanan dan pengaturan bobot kriteria.</p>
                 <input 
                   type="password" 
-                  placeholder="Password (admin123)" 
+                  placeholder="Masukkan Password" 
                   className="input-field" 
                   style={{ marginBottom: '1rem', width: '100%' }} 
                   value={adminPassword}
