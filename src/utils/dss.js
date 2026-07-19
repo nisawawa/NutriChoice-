@@ -150,14 +150,14 @@ export function getDynamicAlternatives(formData) {
   return ALTERNATIVES.map(alt => {
     let newValues = { ...alt.values };
     
+    // 1. Reset semua nilai Penyakit (C5) ke 3 (Netral)
+    newValues.C5 = 3;
+    
+    // 2. Berikan nilai 1 (Sangat Ampuh) HANYA untuk makanan yang spesifik mengobati penyakit tersebut
     if (goal === 'Penyakit Jantung' && ['A1','A5','A20','A10','A32'].includes(alt.id)) newValues.C5 = 1;
     else if (goal === 'Diabetes' && ['A13','A3','A9','A27','A35'].includes(alt.id)) newValues.C5 = 1;
-    else if (goal === 'Hipertensi' && ['A12','A34','A24','A22'].includes(alt.id)) newValues.C5 = 1;
+    else if (goal === 'Hipertensi' && ['A12','A34','A24','A22','A4'].includes(alt.id)) newValues.C5 = 1;
     else if (goal === 'Kanker' && ['A15','A16','A3','A28','A26'].includes(alt.id)) newValues.C5 = 1;
-    
-    if (alt.id === 'A4') {
-       if (goal !== 'Hipertensi' && goal !== 'Penyakit Jantung') newValues.C5 = 3;
-    }
     
     if (budget < 25000) {
       if (alt.nutrition.harga >= 7) newValues.C6 = 5;
