@@ -9,6 +9,8 @@ function App() {
     name: '',
     age: '',
     gender: 'Laki-laki',
+    weight: '',
+    activityLevel: 'Sedang',
     budget: '',
     goal: 'Penyakit Jantung'
   });
@@ -22,8 +24,8 @@ function App() {
   };
 
   const handleIdentitySubmit = () => {
-    if (!formData.name || !formData.age) {
-      alert("Harap isi nama dan usia Anda.");
+    if (!formData.name || !formData.age || !formData.weight) {
+      alert("Harap isi nama, usia, dan berat badan Anda.");
       return;
     }
     // Directly move to the next step
@@ -49,26 +51,28 @@ function App() {
 
   const resetForm = () => {
     setStep(1);
-    setFormData({ name: '', age: '', gender: 'Laki-laki', budget: '', goal: 'Penyakit Jantung' });
+    setFormData({ name: '', age: '', gender: 'Laki-laki', weight: '', activityLevel: 'Sedang', budget: '', goal: 'Penyakit Jantung' });
     setResults(null);
     setSelectedMenu(null);
   };
 
   const getRecommendedCalories = () => {
     const age = parseInt(formData.age) || 25;
+    const weight = parseInt(formData.weight) || 60;
+    
+    // BMR Calculation (Mifflin-St Jeor) assuming average height (165cm men, 155cm women)
+    let bmr;
     if (formData.gender === 'Laki-laki') {
-      if (age <= 29) return 2650;
-      if (age >= 30 && age <= 49) return 2550;
-      if (age >= 50 && age <= 64) return 2150;
-      if (age >= 65 && age <= 80) return 1800;
-      return 1600; // > 80
+      bmr = (10 * weight) + (6.25 * 165) - (5 * age) + 5;
     } else {
-      if (age <= 29) return 2250;
-      if (age >= 30 && age <= 49) return 2150;
-      if (age >= 50 && age <= 64) return 1800;
-      if (age >= 65 && age <= 80) return 1550;
-      return 1400; // > 80
+      bmr = (10 * weight) + (6.25 * 155) - (5 * age) - 161;
     }
+
+    let activityMultiplier = 1.375; // Sedang
+    if (formData.activityLevel === 'Ringan') activityMultiplier = 1.2;
+    if (formData.activityLevel === 'Berat') activityMultiplier = 1.55;
+
+    return Math.round(bmr * activityMultiplier);
   };
 
   return (
@@ -129,6 +133,21 @@ function App() {
                 <select name="gender" className="select-field" value={formData.gender} onChange={handleInputChange}>
                   <option value="Laki-laki">Laki-laki</option>
                   <option value="Perempuan">Perempuan</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+              <div className="input-group">
+                <label className="input-label">Berat Badan (kg)</label>
+                <input type="number" name="weight" className="input-field" placeholder="Contoh: 65" value={formData.weight} onChange={handleInputChange} />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Aktivitas Fisik</label>
+                <select name="activityLevel" className="select-field" value={formData.activityLevel} onChange={handleInputChange}>
+                  <option value="Ringan">Ringan (Jarang olahraga)</option>
+                  <option value="Sedang">Sedang (Olahraga 1-3x/minggu)</option>
+                  <option value="Berat">Berat (Olahraga 4-5x/minggu)</option>
                 </select>
               </div>
             </div>
@@ -263,11 +282,15 @@ function App() {
                         </td>
                         <td>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                            {CRITERIA.slice(0, 3).map(c => (
-                              <span key={c.id} style={{ fontSize: '0.75rem', backgroundColor: '#f1f5f9', padding: '0.25rem 0.5rem', borderRadius: '0.25rem' }}>
-                                {c.name}: {item.values[c.id]}
-                              </span>
-                            ))}
+                            <span style={{ fontSize: '0.75rem', backgroundColor: '#f1f5f9', padding: '0.25rem 0.5rem', borderRadius: '0.25rem' }}>
+                              Protein: {item.nutrition.protein}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', backgroundColor: '#f1f5f9', padding: '0.25rem 0.5rem', borderRadius: '0.25rem' }}>
+                              Serat: {item.nutrition.serat}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', backgroundColor: '#f1f5f9', padding: '0.25rem 0.5rem', borderRadius: '0.25rem' }}>
+                              Vitamin: {item.nutrition.vitamin}
+                            </span>
                           </div>
                         </td>
                         <td>
