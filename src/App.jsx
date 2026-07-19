@@ -115,7 +115,7 @@ function App() {
         {!authRole && (
           <div className="glass-panel card animate-fade-in" style={{ maxWidth: '800px', margin: '2rem auto', textAlign: 'center' }}>
             <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem' }} className="text-gradient">Selamat Datang di NutriChoice</h1>
-            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '3rem', fontSize: '1.1rem' }}>Sistem Pendukung Keputusan Pemilihan Menu Makanan Medis</p>
+            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '3rem', fontSize: '1.1rem' }}>Sistem Pendukung Keputusan Pemilihan Menu Makanan Sehat</p>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
               {/* Login Pengguna */}
