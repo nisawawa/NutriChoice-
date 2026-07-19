@@ -59,7 +59,7 @@ function App() {
   };
 
   const handleAdminLogin = () => {
-    if (adminPassword === 'admin123') {
+    if (adminPassword === 'admin') {
       setAuthRole('admin');
       setAdminPassword('');
     } else {
