@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { calculateSAW, calculateTOPSIS, CRITERIA, AI_RECOMMENDATIONS } from './utils/dss';
+import { calculateSAW, calculateTOPSIS, CRITERIA, AI_RECOMMENDATIONS, ALTERNATIVES } from './utils/dss';
 import './index.css';
 
 function App() {
   const [step, setStep] = useState(1);
+  const [view, setView] = useState('user'); // 'user' or 'admin'
+  const [isAdminAuth, setIsAdminAuth] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -88,14 +90,68 @@ function App() {
             NutriChoice
           </a>
           <div>
+            <button onClick={() => setView(view === 'user' ? 'admin' : 'user')} style={{ background: 'none', border: 'none', cursor: 'pointer', marginRight: '1rem', color: 'var(--color-text-secondary)', fontSize: '1.2rem' }} title="Mode Admin">
+               🔒
+            </button>
             <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-text-secondary)'}}>Sistem Pendukung Keputusan</span>
           </div>
         </div>
       </nav>
 
       <main className="container" style={{ flex: 1, padding: '3rem 1.5rem' }}>
-        {/* Stepper */}
-        <div className="stepper animate-fade-in">
+        {view === 'admin' && !isAdminAuth && (
+          <div className="glass-panel card animate-fade-in" style={{ maxWidth: '400px', margin: '2rem auto', textAlign: 'center' }}>
+            <h2>Admin Login</h2>
+            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Masukkan password untuk masuk ke mode admin.</p>
+            <input type="password" placeholder="Password (admin123)" className="input-field" style={{ marginBottom: '1rem' }} id="admin-pass" />
+            <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => { 
+              if(document.getElementById('admin-pass').value === 'admin123') setIsAdminAuth(true); 
+              else alert('Password salah!'); 
+            }}>Login</button>
+          </div>
+        )}
+
+        {view === 'admin' && isAdminAuth && (
+          <div className="glass-panel card animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <h2>Dashboard Admin: Data Alternatif</h2>
+              <button className="btn btn-primary" onClick={() => alert('Fitur Tambah Data membutuhkan koneksi database. Saat ini sedang dalam tahap pengembangan (Future Work).')}>+ Tambah Menu</button>
+            </div>
+            
+            <div className="table-responsive" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+              <table className="results-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nama Menu</th>
+                    <th>Harga Relatif</th>
+                    <th>Kalori Relatif</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ALTERNATIVES.map((alt) => (
+                    <tr key={alt.id}>
+                      <td style={{ fontWeight: 'bold' }}>{alt.id}</td>
+                      <td>{alt.emoji} {alt.name}</td>
+                      <td>{alt.nutrition.harga}/10</td>
+                      <td>{alt.values.C4}/5</td>
+                      <td>
+                        <button style={{ padding: '0.4rem 0.8rem', marginRight: '0.5rem', background: '#eab308', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }} onClick={() => alert('Fitur Edit membutuhkan koneksi database.')}>Edit</button>
+                        <button style={{ padding: '0.4rem 0.8rem', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }} onClick={() => alert('Fitur Hapus membutuhkan koneksi database.')}>Hapus</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {view === 'user' && (
+          <>
+            {/* Stepper */}
+            <div className="stepper animate-fade-in">
           <div className={`step ${step >= 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>
             <div className="step-circle">1</div>
           </div>
@@ -317,6 +373,8 @@ function App() {
               </div>
             </div>
           </div>
+            )}
+          </>
         )}
       </main>
     </div>
