@@ -4,8 +4,8 @@ import './index.css';
 
 function App() {
   const [step, setStep] = useState(1);
-  const [view, setView] = useState('user'); // 'user' or 'admin'
-  const [isAdminAuth, setIsAdminAuth] = useState(false);
+  const [authRole, setAuthRole] = useState(null); // null, 'user', or 'admin'
+  const [adminPassword, setAdminPassword] = useState('');
   const [isChecking, setIsChecking] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -58,6 +58,15 @@ function App() {
     setSelectedMenu(null);
   };
 
+  const handleAdminLogin = () => {
+    if (adminPassword === 'admin123') {
+      setAuthRole('admin');
+      setAdminPassword('');
+    } else {
+      alert('Password Admin salah!');
+    }
+  };
+
   const getRecommendedCalories = () => {
     const age = parseInt(formData.age) || 25;
     
@@ -90,13 +99,9 @@ function App() {
             NutriChoice
           </a>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            {view === 'user' ? (
-              <button onClick={() => setView('admin')} className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }}>
-                Login Admin
-              </button>
-            ) : (
-              <button onClick={() => { setView('user'); setIsAdminAuth(false); }} className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }}>
-                Kembali ke App
+            {authRole && (
+              <button onClick={() => { setAuthRole(null); resetForm(); }} className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }}>
+                Logout
               </button>
             )}
             <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-text-secondary)'}}>Sistem Pendukung Keputusan</span>
@@ -105,19 +110,43 @@ function App() {
       </nav>
 
       <main className="container" style={{ flex: 1, padding: '3rem 1.5rem' }}>
-        {view === 'admin' && !isAdminAuth && (
-          <div className="glass-panel card animate-fade-in" style={{ maxWidth: '400px', margin: '2rem auto', textAlign: 'center' }}>
-            <h2>Admin Login</h2>
-            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Masukkan password untuk masuk ke mode admin.</p>
-            <input type="password" placeholder="Password (admin123)" className="input-field" style={{ marginBottom: '1rem' }} id="admin-pass" />
-            <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => { 
-              if(document.getElementById('admin-pass').value === 'admin123') setIsAdminAuth(true); 
-              else alert('Password salah!'); 
-            }}>Login</button>
+        
+        {/* Halaman Login Role */}
+        {!authRole && (
+          <div className="glass-panel card animate-fade-in" style={{ maxWidth: '800px', margin: '2rem auto', textAlign: 'center' }}>
+            <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem' }} className="text-gradient">Selamat Datang di NutriChoice</h1>
+            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '3rem', fontSize: '1.1rem' }}>Sistem Pendukung Keputusan Pemilihan Menu Makanan Medis</p>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+              {/* Login Pengguna */}
+              <div style={{ padding: '2rem', border: '1px solid #e2e8f0', borderRadius: '1rem', background: '#f8fafc' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👤</div>
+                <h3 style={{ marginBottom: '1rem' }}>Masuk sebagai Pengguna</h3>
+                <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', marginBottom: '2rem' }}>Konsultasi menu makanan harian sesuai profil kesehatan Anda.</p>
+                <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => setAuthRole('user')}>Login Pengguna</button>
+              </div>
+
+              {/* Login Admin */}
+              <div style={{ padding: '2rem', border: '1px solid #e2e8f0', borderRadius: '1rem', background: '#f8fafc' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
+                <h3 style={{ marginBottom: '1rem' }}>Masuk sebagai Admin</h3>
+                <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>Kelola database menu makanan dan pengaturan bobot kriteria.</p>
+                <input 
+                  type="password" 
+                  placeholder="Password (admin123)" 
+                  className="input-field" 
+                  style={{ marginBottom: '1rem', width: '100%' }} 
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                />
+                <button className="btn btn-primary" style={{ width: '100%', background: 'linear-gradient(135deg, #475569, #334155)' }} onClick={handleAdminLogin}>Login Admin</button>
+              </div>
+            </div>
           </div>
         )}
 
-        {view === 'admin' && isAdminAuth && (
+        {/* Dashboard Admin */}
+        {authRole === 'admin' && (
           <div className="glass-panel card animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
               <h2>Dashboard Admin: Data Alternatif</h2>
@@ -154,7 +183,8 @@ function App() {
           </div>
         )}
 
-        {view === 'user' && (
+        {/* Antarmuka Pengguna Utama */}
+        {authRole === 'user' && (
           <>
             {/* Stepper */}
             <div className="stepper animate-fade-in">
