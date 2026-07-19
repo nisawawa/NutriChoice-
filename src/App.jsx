@@ -37,8 +37,8 @@ function App() {
       alert("Harap masukkan budget Anda.");
       return;
     }
-    const sawResults = calculateSAW();
-    const topsisResults = calculateTOPSIS();
+    const sawResults = calculateSAW(formData);
+    const topsisResults = calculateTOPSIS(formData);
     setResults({ saw: sawResults, topsis: topsisResults });
     setStep(3);
   };

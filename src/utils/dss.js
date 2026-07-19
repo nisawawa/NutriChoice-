@@ -108,11 +108,76 @@ export const AI_RECOMMENDATIONS = {
   'A36': { name: 'Salad Sayur Biji Labu', recipe: 'Campurkan sayuran hijau, siram saus wijen, taburkan biji labu panggang.', desc: 'Harta karun mineral Zinc dan Magnesium esensial untuk kesehatan hormon.', image: 'https://www.themealdb.com/images/media/meals/wxswxy1511452625.jpg' }
 };
 
-export function calculateSAW() {
-  const normalizedMatrix = ALTERNATIVES.map(alt => {
+export function getDynamicCriteria(formData) {
+  if (!formData) return CRITERIA;
+  
+  let weights = { C1: 0.10, C2: 0.10, C3: 0.15, C4: 0.15, C5: 0.25, C6: 0.25 };
+  const age = parseInt(formData.age) || 25;
+  const weight = parseInt(formData.weight) || 60;
+  const budget = parseInt(formData.budget) || 50000;
+  const goal = formData.goal;
+
+  if (age > 50) { weights.C1 = 0.25; weights.C3 = 0.05; }
+  else if (age < 30) { weights.C1 = 0.05; weights.C3 = 0.25; }
+
+  if (weight > 80) { weights.C4 = 0.35; weights.C5 -= 0.10; }
+  else if (weight < 50) { weights.C4 = 0.05; weights.C5 += 0.10; }
+
+  if (budget < 20000) { weights.C6 = 0.40; weights.C5 -= 0.15; }
+  else if (budget > 100000) { weights.C6 = 0.05; weights.C5 += 0.20; }
+  
+  if (goal === 'Diabetes') { weights.C5 += 0.20; }
+  else if (goal === 'Kanker') { weights.C5 += 0.15; }
+  
+  let total = 0;
+  for (let k in weights) { 
+    if(weights[k] < 0.05) weights[k] = 0.05;
+    total += weights[k]; 
+  }
+  
+  return CRITERIA.map(c => ({
+    ...c,
+    weight: weights[c.id] / total
+  }));
+}
+
+export function getDynamicAlternatives(formData) {
+  if (!formData) return ALTERNATIVES;
+  
+  const budget = parseInt(formData.budget) || 50000;
+  const goal = formData.goal;
+  
+  return ALTERNATIVES.map(alt => {
+    let newValues = { ...alt.values };
+    
+    if (goal === 'Penyakit Jantung' && ['A1','A5','A20','A10','A32'].includes(alt.id)) newValues.C5 = 1;
+    else if (goal === 'Diabetes' && ['A13','A3','A9','A27','A35'].includes(alt.id)) newValues.C5 = 1;
+    else if (goal === 'Hipertensi' && ['A12','A34','A24','A22'].includes(alt.id)) newValues.C5 = 1;
+    else if (goal === 'Kanker' && ['A15','A16','A3','A28','A26'].includes(alt.id)) newValues.C5 = 1;
+    
+    if (alt.id === 'A4') {
+       if (goal !== 'Hipertensi' && goal !== 'Penyakit Jantung') newValues.C5 = 3;
+    }
+    
+    if (budget < 25000) {
+      if (alt.nutrition.harga >= 7) newValues.C6 = 5;
+      else if (alt.nutrition.harga <= 4) newValues.C6 = 1;
+    } else if (budget >= 75000) {
+      if (alt.nutrition.harga >= 7) newValues.C6 = 2;
+    }
+    
+    return { ...alt, values: newValues };
+  });
+}
+
+export function calculateSAW(formData) {
+  const dynamicCriteria = getDynamicCriteria(formData);
+  const dynamicAlts = getDynamicAlternatives(formData);
+
+  const normalizedMatrix = dynamicAlts.map(alt => {
     const normValues = {};
-    CRITERIA.forEach(crit => {
-      const vals = ALTERNATIVES.map(a => a.values[crit.id]);
+    dynamicCriteria.forEach(crit => {
+      const vals = dynamicAlts.map(a => a.values[crit.id]);
       if (crit.type === 'benefit') {
         const max = Math.max(...vals);
         normValues[crit.id] = alt.values[crit.id] / max;
@@ -126,7 +191,7 @@ export function calculateSAW() {
 
   const scoredAlternatives = normalizedMatrix.map(alt => {
     let score = 0;
-    CRITERIA.forEach(crit => {
+    dynamicCriteria.forEach(crit => {
       score += alt.normValues[crit.id] * crit.weight;
     });
     return { ...alt, score: Number(score.toFixed(4)) };
@@ -135,15 +200,18 @@ export function calculateSAW() {
   return scoredAlternatives.sort((a, b) => b.score - a.score);
 }
 
-export function calculateTOPSIS() {
+export function calculateTOPSIS(formData) {
+  const dynamicCriteria = getDynamicCriteria(formData);
+  const dynamicAlts = getDynamicAlternatives(formData);
+
   const sumSquares = {};
-  CRITERIA.forEach(crit => {
-    sumSquares[crit.id] = Math.sqrt(ALTERNATIVES.reduce((acc, alt) => acc + Math.pow(alt.values[crit.id], 2), 0));
+  dynamicCriteria.forEach(crit => {
+    sumSquares[crit.id] = Math.sqrt(dynamicAlts.reduce((acc, alt) => acc + Math.pow(alt.values[crit.id], 2), 0));
   });
 
-  const normalizedMatrix = ALTERNATIVES.map(alt => {
+  const normalizedMatrix = dynamicAlts.map(alt => {
     const normValues = {};
-    CRITERIA.forEach(crit => {
+    dynamicCriteria.forEach(crit => {
       normValues[crit.id] = alt.values[crit.id] / sumSquares[crit.id];
     });
     return { ...alt, normValues };
@@ -151,7 +219,7 @@ export function calculateTOPSIS() {
 
   const weightedMatrix = normalizedMatrix.map(alt => {
     const weightValues = {};
-    CRITERIA.forEach(crit => {
+    dynamicCriteria.forEach(crit => {
       weightValues[crit.id] = alt.normValues[crit.id] * crit.weight;
     });
     return { ...alt, weightValues };
@@ -160,7 +228,7 @@ export function calculateTOPSIS() {
   const idealPositive = {};
   const idealNegative = {};
   
-  CRITERIA.forEach(crit => {
+  dynamicCriteria.forEach(crit => {
     const vals = weightedMatrix.map(a => a.weightValues[crit.id]);
     if (crit.type === 'benefit') {
       idealPositive[crit.id] = Math.max(...vals);
@@ -175,7 +243,7 @@ export function calculateTOPSIS() {
     let dPlusSq = 0;
     let dMinSq = 0;
     
-    CRITERIA.forEach(crit => {
+    dynamicCriteria.forEach(crit => {
       dPlusSq += Math.pow(alt.weightValues[crit.id] - idealPositive[crit.id], 2);
       dMinSq += Math.pow(alt.weightValues[crit.id] - idealNegative[crit.id], 2);
     });
@@ -183,8 +251,8 @@ export function calculateTOPSIS() {
     const dPlus = Math.sqrt(dPlusSq);
     const dMin = Math.sqrt(dMinSq);
     
-    const closeness = dMin / (dMin + dPlus);
-    return { ...alt, score: Number(closeness.toFixed(4)) };
+    const score = dMin / (dMin + dPlus);
+    return { ...alt, score: Number(score.toFixed(4)) };
   });
 
   return finalScores.sort((a, b) => b.score - a.score);
